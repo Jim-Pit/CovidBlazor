@@ -1,0 +1,14 @@
+﻿@*@typeparam TPage*@
+
+<div class="btn-group mb-3" role="group">
+    @foreach (var tab in Tabs)
+    {
+        <button type="button" class="btn @GetButtonClass(tab)" @onclick=@(() => ActivatePage(tab))>
+            @tab.Sign
+        </button>
+    }
+</div>
+
+<CascadingValue Value="this">
+    @ChildContent <!-- This is the markup that is between the starting and closing tags of TabContainer component -->
+</CascadingValue>

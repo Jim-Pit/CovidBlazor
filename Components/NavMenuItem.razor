@@ -1,0 +1,36 @@
+@if (ChildContent == null)
+{
+	<li class="nav-item">
+		<NavLink class="nav-link" href="@Path" @onclick="OnSelect">@Text</NavLink>
+	</li>
+}
+else
+{
+	<li class="nav-item">
+        <NavLink class="nav-link" @onclick="ExpandCollapseSubMenu">
+            <span>@Text</span>
+            <span class="oi @_submenuIconCssClass"></span>@*aria-hidden="true"*@
+        </NavLink>
+		@if (_submenuExpanded)
+		{
+			<ul class="nav">
+				@ChildContent
+			</ul>
+		}
+	</li>
+}
+
+@code {
+    private bool _submenuExpanded = false;
+    private string _submenuIconCssClass => _submenuExpanded ? "oi-arrow-circle-top" : "oi-arrow-circle-bottom";
+
+    [Parameter] public string Text { get; set; }
+    [Parameter] public string Path { get; set; }
+    [Parameter] public EventCallback OnSelect { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private void ExpandCollapseSubMenu()
+    {
+        _submenuExpanded = !_submenuExpanded;
+    }
+}

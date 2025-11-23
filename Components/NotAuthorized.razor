@@ -1,0 +1,38 @@
+﻿@inject AuthenticationStateProvider authenticationStateProvider
+@inject NavigationManager navigationManager
+
+@if (_notAuthorized)
+{
+    <section class="section">
+        <div class="container">
+            <div>
+                <h1>Authorization Failure!</h1>
+                <p>You're not authorized to see this page.</p>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    [CascadingParameter] Task<AuthenticationState> _authStateTask { get; set; }
+
+    private bool _notAuthorized;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        var authState = await _authStateTask;
+        var authenticated = authState.User.Identity.IsAuthenticated;
+        if (!authenticated)
+        {
+            // If the user is not authenticated redirect them to the sign in page
+            var uri = new Uri(navigationManager.Uri);
+            navigationManager.NavigateTo("/account/login?returnUrl=" + System.Net.WebUtility.UrlEncode(uri.PathAndQuery));
+        }
+        else
+        {
+            // If the user is signed in, authorization failed
+            _notAuthorized = true;
+        }
+    }
+}

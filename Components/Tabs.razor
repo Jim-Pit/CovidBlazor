@@ -1,0 +1,14 @@
+@typeparam TPage
+
+<div class="btn-group" role="group">
+	@foreach (var sign in TabsSigns)
+	{
+		<button type="button"
+				class="btn @GetButtonClass(sign)"
+				@onclick=@(() => RefreshContent(sign))>
+			@sign
+		</button>
+	}
+</div>
+
+@ChildContent

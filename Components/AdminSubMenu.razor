@@ -1,0 +1,8 @@
+﻿<NavMenuItem Text="Users" Path="admin/users" OnSelect="OnSelect" />
+<NavMenuItem Text="Diagnostic Centers" Path="admin/diagnostic-centers" OnSelect="OnSelect" />
+<NavMenuItem Text="Cities" Path="admin/cities" OnSelect="OnSelect" />
+<NavMenuItem Text="Vaccines" Path="admin/vaccines" OnSelect="OnSelect" />
+
+@code{
+    [Parameter] public EventCallback OnSelect { get; set; }
+}

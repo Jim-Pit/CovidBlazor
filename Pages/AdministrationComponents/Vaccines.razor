@@ -1,0 +1,156 @@
+﻿@page "/admin/vaccines"
+@attribute [Authorize(Roles = Role.AdminRoleKey)]
+
+@using CoViDAccountant.Components
+@using DbDesign
+@using DbDesign.Entities
+@using Microsoft.EntityFrameworkCore
+
+<h3>Vaccines</h3>
+
+<DataTable State="_state" OnStateChange="Refresh">
+    <Actions>
+        <button class="btn btn-success btn-circle" @onclick="_ => OnModalShow()">
+            Add
+        </button>
+    </Actions>
+    <TableHeader>
+        <tr>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Times</th>
+        </tr>
+    </TableHeader>
+    <TableBody>
+        @foreach (var i in _items)
+        {
+            <tr>
+                <td>@i.Code</td>
+                <td>@i.Description</td>
+                <td>@i.Cuts</td>
+
+                <td class="actions actions-2x">
+                    <button class="btn btn-info btn-circle" @onclick="_ => OnModalShow(i)">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="btn btn-danger btn-circle" @onclick="_ => OnDelete(i)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </TableBody>
+</DataTable>
+
+<ModalDialog @ref=_modal TModel="Vaccine" Model="_model"
+             Header="@(_model.Id == 0 ? "Add" : "Edit")"
+             Submit="Submit">
+    <div class="form-group row">
+        <label class="col-sm-4 col-lg-3 col-form-label required">Code</label>
+        <div class="col-sm-8 col-lg-9">
+            <InputText class="form-control" @bind-Value="@_model.Code" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-4 col-lg-3 col-form-label required">Description</label>
+        <div class="col-sm-8 col-lg-9">
+            <InputText class="form-control" @bind-Value="@_model.Description" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-4 col-lg-3 col-form-label required">Times</label>
+        <div class="col-sm-8 col-lg-9">
+            <InputNumber TValue="int" class="form-control" @bind-Value="@_model.Cuts" />
+        </div>
+    </div>
+</ModalDialog>
+
+@code {
+    [Inject] CoViDAccountantDbContext DbContext { get; set; }
+
+    private List<Vaccine> _items;
+    private Vaccine _model = new Vaccine();
+
+    private ModalDialog<Vaccine> _modal;
+    private string _errorMsg;
+
+    private PageState _state;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _state = new PageState();
+        await Refresh();
+    }
+
+    private void OnModalShow(Vaccine selected = null)
+    {
+        _model = selected == null
+            ? new Vaccine()
+            : new Vaccine
+            {
+                Id = selected.Id,
+                Code = selected.Code,
+                Description = selected.Description,
+                Cuts = selected.Cuts
+            };
+        _modal.Show(_model);
+    }
+
+    private async Task Submit(Vaccine model)
+    {
+        var isNew = model.Id == 0;
+        var success = await Save(model);
+        if (success.HasValue)
+        {
+            if (isNew)
+            {
+                _items.Add(model);
+                StateHasChanged();
+            }
+            else
+            {
+                var previous = _items.FirstOrDefault(x => x.Id == model.Id);
+                var idx = _items.IndexOf(previous);
+                _items.Remove(previous);
+                _items.Insert(idx, model);
+            }
+        }
+    }
+
+    private async Task<bool?> Save(Vaccine model)
+    {
+        if (string.IsNullOrEmpty(model.Code))
+        {
+            return null;
+        }
+        if (model.Id == 0)
+        {
+            DbContext.Vaccines.Add(model);
+        }
+        else
+        {
+            var entity = await DbContext.Vaccines.SingleOrDefaultAsync(x => x.Id == model.Id);
+            entity.Code = model.Code;
+            entity.Description = model.Description;
+            entity.Cuts = model.Cuts;
+        }
+        await DbContext.SaveChangesAsync();
+        return true;
+    }
+
+    private void OnDelete(Vaccine selected)
+    {
+    }
+
+    private async Task Refresh()
+    {
+        var query = DbContext.Vaccines.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(_state.Filter))
+        {
+            query = query.Where(x => x.Code.Contains(_state.Filter));
+        }
+
+        _items = await _state.ExecutePagedQuery(query);
+    }
+}

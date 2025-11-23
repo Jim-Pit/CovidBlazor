@@ -1,0 +1,21 @@
+@if (TabContainer.ActiveTab.Sign == Sign)
+{
+		@ChildContent
+}
+
+@code
+{
+    [CascadingParameter] private TabContainer TabContainer { get; set; }
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    [Parameter] public string Sign { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (TabContainer == null)
+            throw new System.ArgumentNullException(nameof(TabContainer), "Tab component must exist within a tab control ");
+        base.OnInitialized();
+        TabContainer.AddTab(this);
+    }
+}

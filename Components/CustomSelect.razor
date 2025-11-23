@@ -1,0 +1,49 @@
+@typeparam TItem
+
+@if (Items != null)
+{
+    <select id="@Id" class="form-control @CssClass @_selectedClass" value="@Value" @onchange="OnChange" 
+            @attributes="@Attrs.Merge(InputAttributes, (Enabled ? Attrs.Empty : Attrs.Disabled))">
+        @if (!String.IsNullOrEmpty(Prompt) && (!IsRequired || (IsRequired && !HasValue)))
+		{
+			//var attrs = Equals(NoValue, Value) ? Attrs.Selected : Attrs.Empty;
+            <option class="prompt" value="@NoValue">@Prompt</option>
+        }
+        @foreach (var item in Items)
+        {
+            var attrs = Equals(ValueFunc(item), Value) ? Attrs.Selected : Attrs.Empty;
+            <option value="@ValueFunc(item)" @attributes="attrs">@LabelFunc(item)</option>
+        }
+    </select>
+}
+
+@code {
+	[Parameter] public string Id { get; set; }
+	[Parameter] public string CssClass { get; set; }
+	[Parameter] public object NoValue { get; set; }
+	[Parameter] public string Prompt { get; set; } = "-";
+	[Parameter] public IList<TItem> Items { get; set; }
+	[Parameter] public Func<TItem, object> ValueFunc { get; set; } = (x => x);
+	[Parameter] public Func<TItem, string> LabelFunc { get; set; } = (x => x?.ToString());
+	[Parameter] public object Value { get; set; }
+	[Parameter] public EventCallback<ChangeEventArgs> ItemChanged { get; set; }
+	[Parameter] public bool IsRequired { get; set; }
+	[Parameter] public bool Enabled { get; set; } = true;
+	[Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> InputAttributes { get; set; }
+
+	public bool HasValue => !Equals(Value?.ToString(), NoValue?.ToString());
+	private string _selectedClass => HasValue ? "selected" : "";
+
+	private async Task OnChange(ChangeEventArgs args)
+	{
+		if (Equals(args.Value, Value))
+			return;
+
+		// in case of string values
+		if (Equals(args.Value.ToString(), Prompt))
+			args.Value = NoValue;
+
+		await ItemChanged.InvokeAsync(args);
+		Value = args.Value;
+	}
+}

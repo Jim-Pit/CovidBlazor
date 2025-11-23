@@ -1,0 +1,37 @@
+﻿@typeparam TItem
+@typeparam TKey
+@implements IDisposable
+@using System.Timers
+
+@if (_maskOn)
+{
+    <label class="form-control" @onclick="OnClickMask">
+        @SelectedTemplate(Value)
+    </label>
+}
+else
+{
+    <input @ref="_searchInput"
+           @bind-value="SearchText"
+           @bind-value:event="oninput"
+           class="form-control @CssClass"
+           autocomplete="off"
+           type="text" />
+    @*@onkeyup:stopPropagation="true"
+        @onkeyup:preventDefault="true"*@
+}
+
+@if (ShouldShowSuggestions())
+{
+    @*<div class="blazored-typeahead__results">*@
+    @for (var i = 0; i < _suggestions.Length; i++)
+    {
+        var item = _suggestions[i];
+
+        <div @key="item" class="blazored-typeahead__result"
+             @onclick="@(_ => SelectResult(item))">
+            @ResultTemplate(item)
+        </div>
+    }
+    @*</div>*@
+}

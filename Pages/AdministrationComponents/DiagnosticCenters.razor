@@ -1,0 +1,141 @@
+﻿@page "/admin/diagnostic-centers"
+@page "/personal"
+@*@page "/admin/diagnostic-centers/{UserId:guid}"*@
+@attribute [Authorize]
+
+@using CoViDAccountant.Components
+@using DbDesign.Entities
+
+<h3 class="page-title">Diagnostic-Centers</h3>
+
+<DataTable State="_state" OnStateChange="Refresh" HasPaging="_loggedInAsStaffQuery == null">
+    <Actions>
+        @if(_loggedInAsStaffQuery == null)
+        { 
+            <button class="btn btn-success btn-circle btn-md" @onclick="_ => OnModalShow()">
+                <span class="oi oi-plus"></span>
+            </button>
+        }
+    </Actions>
+    <TableHeader>
+        <tr>
+            <th>Name</th>
+            <th>District</th>
+            <th>Address</th>
+            @if (_loggedInAsStaffQuery == null)
+            {
+            <th></th>
+            }
+        </tr>
+    </TableHeader>
+    <TableBody>
+        @foreach (var i in _items)
+        {
+            <tr>
+                <td><a href="/diagnostic-centers/@i.Id/records">@i.Name</a></td>
+                <td>@($"{i.Burg.Name} ({i.Burg.City?.Name})")</td>
+                <td>@i.Address.ToString()</td>
+                @if(_loggedInAsStaffQuery == null)
+                { 
+                <td class="actions actions-3x">
+                    <button class="btn btn-light btn-circle" @onclick="_ => OnAssignUser(i)">
+                        <span class="oi oi-script"></span>
+                    </button>
+                    <button class="btn btn-info btn-circle" @onclick="_ => OnModalShow(i)">
+                        <span class="oi oi-pencil"></span>
+                    </button>
+                    <button class="btn btn-danger btn-circle" @onclick="_ => OnDelete(i)">
+                            <span class="oi oi-minus"></span>
+                    </button>
+                </td>
+                }
+            </tr>
+        }
+    </TableBody>
+</DataTable>
+
+<ModalDialog @ref=_modal TModel="DiagnosticCenterModel" Model="_model"
+             Header="@(_model.Id == 0 ? "Add" : "Edit")"
+             Submit="Submit">
+
+    <div class="form-group row">
+        <label class="col-sm-4 col-lg-3 col-form-label required">Name</label>
+        <div class="col-sm-8 col-lg-9">
+            <InputText class="form-control" @bind-Value="@_model.Name" />
+        </div>
+    </div>
+
+    @if (_cities != null)
+    {
+        <div class="form-group row">
+            <label class="col-sm-4 col-lg-3 col-form-label required">City</label>
+            <div class="col-sm-8 col-lg-9">
+                <CustomSelect IsRequired="_model.Id != 0" Prompt="Select City" NoValue="0" Value="_model.City?.Id ?? 0"
+                              Items="@_cities"
+                              ItemChanged="OnModelCityChanged"
+                              ValueFunc="x => x.Id" LabelFunc="x => x.Name" />
+                <ValidationMessage For="@(() => _model.City)" />
+            </div>
+        </div>
+        @if (_model.City != null)
+        {
+            <div class="form-group row">
+                <label class="col-sm-4 col-lg-3 col-form-label required">City</label>
+                <div class="col-sm-8 col-lg-9">
+                    <CustomSelect IsRequired="_model.Id != 0" Prompt="Select District" NoValue="0" Value="_model.Burg?.Id ?? 0"
+                                  Items="@_model.City.Districts"
+                                  ItemChanged="OnModelDistrictChanged"
+                                  ValueFunc="x => x.Id" LabelFunc="x => x.Name" />
+                    <ValidationMessage For="@(() => _model.Burg)" />
+                </div>
+            </div>
+        }
+    }
+
+    <AddressField Address="@_model.Address" />
+
+    <div class="form-group row">
+        <label class="col-sm-4 col-lg-3 col-form-label required">Phone</label>
+        <div class="col-sm-8 col-lg-9">
+            <InputText class="form-control" @bind-Value="@_model.Phone" />
+            <ValidationMessage For="@(() => _model.Phone)" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-sm-4 col-lg-3 col-form-label required">Email</label>
+        <div class="col-sm-8 col-lg-9">
+            <InputText class="form-control" @bind-Value="@_model.Email" />
+            <ValidationMessage For="@(() => _model.Email)" />
+        </div>
+    </div>
+</ModalDialog>
+
+<ModalDialog @ref=_assignToCenterModal TModel="DiagnosticCenterUsersAssignedModel" Model="_assignedUsersModel"
+             Header=@($"Assign Staff to {_assignedUsersModel.Center?.Name}")
+             Submit="Assign">
+    <CustomSelect Prompt="@(_assignedUsersModel.RestUsers.Any() ? "Select User..." : "No Users")" 
+                  NoValue="0" Value="0"
+                  Items="@_assignedUsersModel.RestUsers"
+                  ItemChanged="OnAssignUser" ValueFunc="x => x.Id" LabelFunc="x => x.Name"
+                  Enabled="_assignedUsersModel.RestUsers.Any()" />
+    <div class="form-group row mx-auto">
+        <div class="table-responsive">
+            <table class="table">
+                @foreach (var u in _assignedUsersModel.AssignedUsers)
+                {
+                    <tr>
+                        <td>@u.Name</td>
+                        <td>@u.UserRole.Role.Name</td>
+                        <td>
+                            <button class="btn btn-danger btn-circle btn-sm" type="button" @onclick="() => _assignedUsersModel.AssignedUsers.Remove(u)">
+                                <span class="oi oi-delete"></span>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+</ModalDialog>
+

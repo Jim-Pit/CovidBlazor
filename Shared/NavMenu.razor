@@ -1,0 +1,143 @@
+﻿@using CoViDAccountant.Components
+@using CoViDAccountant.Pages.Users
+@using DbDesign.Entities
+@using Microsoft.AspNetCore.Identity
+
+@*<div class="top-row pl-4 navbar navbar-dark">
+        <a class="navbar-brand" href="">CoViDAccountant</a>
+        <button class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>*@
+
+@*<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+        <ul class="nav flex-column">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="oi oi-home" aria-hidden="true"></span> Home
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="counter">
+                    <span class="oi oi-plus" aria-hidden="true"></span> Counter
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="fetchdata">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+                </NavLink>
+            </li>
+        </ul>
+    </div>*@
+
+<div class="top-row d-flex align-items-center @(_sidebarExpanded ? "expanded" : "")" id="navMenu">
+    @if(_loggedIn)
+    {
+        <div class="menu-icon w-100" @onclick="@((args) => ToggleMenu())">
+            <span class="oi @_menuIconCssClass"></span>
+        </div>
+    }
+    <div class="sidebar-menu @(_sidebarExpanded ? "expanded" : "")">
+
+        @*<div>
+                <EditForm Model="@_userModel" OnValidSubmit="@OnSignIn">
+
+                    <DataAnnotationsValidator />
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-lg-3 col-form-label required">Email</label>
+                        <div class="col-sm-8 col-lg-9">
+                            <InputText class="form-control" @bind-Value="@_userModel.Email" />
+                            <ValidationMessage For="() => _userModel.Email" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-lg-3 col-form-label required">Password</label>
+                        <div class="col-sm-8 col-lg-9">
+                            <InputText class="form-control" @bind-Value="@_userModel.Password" />
+                            <ValidationMessage For="() => _userModel.Password" />
+                        </div>
+                    </div>
+                </EditForm>
+            </div>*@
+
+        <LogInForm Hidden="_loggedIn" />
+
+        @if (_loggedIn && _sidebarExpanded)
+        {
+            <ul class="nav flex-column" style="margin-top: 50px">
+                <AuthorizeView Roles="@Role.AdminRoleKey">
+                    <NavMenuItem Text="Admin">
+                        <AdminSubMenu OnSelect="ToggleMenu" />
+                    </NavMenuItem>
+                </AuthorizeView>
+                <AuthorizeView Roles="@string.Join(',', new string[] { Role.DoctorRoleKey, Role.StaffRoleKey })">
+                    <NavMenuItem Text="Personal" Path="/personal" OnSelect="_ => ToggleMenu()" />
+                </AuthorizeView>
+            </ul>
+        }
+
+        <button class="btn btn-@_loggedInIconColorCssClass" style="position:absolute; bottom:25px;left:25px"
+                @onclick="@LoggingOut">
+            <span class="oi oi-lock-@_loggedInIconCssClass"></span>
+        </button>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> _authStateTask { get; set; }
+
+    [Inject] NavigationManager _navigationManager { get; set; }
+
+    private bool _loggedIn;
+
+    private bool _sidebarExpanded = true;
+
+    private string _loggedInIconCssClass => _loggedIn ? "unlocked" : "locked";
+    private string _loggedInIconColorCssClass => _loggedIn ? "success" : "danger";
+
+    private string _menuIconCssClass => _sidebarExpanded ? "oi-chevron-left" : "oi-menu";
+
+    //protected override void OnAfterRender(bool firstRender)
+    //{
+    //    if (firstRender)
+    //    {
+    //        _loggedIn = (_authStateTask.GetAwaiter().GetResult()).User.Identity.IsAuthenticated;//.IsInRole(DbDesign.Entities.Role.AdminRoleKey);
+    //        //_sidebarExpanded = !_loggedIn;
+    //        StateHasChanged();
+    //    }
+    //}
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _loggedIn = (await _authStateTask).User.Identity.IsAuthenticated;//.IsInRole(DbDesign.Entities.Role.AdminRoleKey);
+            //_sidebarExpanded = !_loggedIn;
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleMenu()
+    {
+        _sidebarExpanded = !_sidebarExpanded;
+        //if (!_loggedIn)
+        //{
+        //    _sidebarLeftExpanded = true;
+        //    return;
+        //}
+        //ExpandCollapseMenu(_sidebarExpanded);
+    }
+    private void ExpandCollapseMenu(bool current)
+    {
+        _sidebarExpanded = !current;
+    }
+
+    private void LoggingOut()
+    {
+        if (_loggedIn)
+        {
+            _navigationManager.NavigateTo("api/users/logout", forceLoad: true);
+        }
+    }
+}

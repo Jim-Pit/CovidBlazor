@@ -1,0 +1,113 @@
+﻿<div class="grid">
+    <div class="row no-gutters">
+        <div class="col-auto grid-actions">
+            @Actions
+        </div>
+        <div class="col"></div>
+        <div class="row align-items-center mx-auto">
+            <input type="search" class="form-control col mr-2" @bind="State.Filter" @onkeyup="@OnSearchKeyUp" placeholder="Search...">
+            <button class="btn btn-primary btn-circle" type="button" title="Search" @onclick="@(_ => Search(State.Filter))">
+                <span class="oi oi-magnifying-glass"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                @TableHeader
+            </thead>
+            <tbody>
+                @if (State.TotalPages > 0)
+                {
+                    @TableBody
+                }
+                else
+                {
+                    <tr><td colspan="100" class="no-records">No records found</td></tr>
+                }
+            </tbody>
+            @*<tfoot>
+                @TableFooter
+            </tfoot>*@
+        </table>
+    </div>
+
+    @if (HasPaging)
+    {
+        <div class="row no-gutters">
+            <div class="col"></div>
+            @if (State.TotalPages > 1)
+            {
+                <div class="pager d-flex align-items-center mx-auto">
+                    <button class="btn btn-primary btn-sm" type="button" title="First Page"
+                            @onclick="@(_ => PageChanged(1))"
+                            @attributes="@(State.CurrentPage == 1 ? Attrs.Disabled : Attrs.Empty)">
+                        <span  class="oi oi-arrow-thick-left"></span>
+                    </button>
+
+                    <button class="btn btn-primary btn-sm mx-2" type="button" title="Previous Page"
+                            @onclick="@(_ => PageChanged(State.CurrentPage - 1))"
+                            @attributes="@(State.CurrentPage == 1 ? Attrs.Disabled : Attrs.Empty)">
+                        <span  class="oi oi-arrow-left"></span>
+                    </button>
+
+                    <CustomSelect CssClass="pager-item pager-current" Title="Select Page"
+                                  Items="Enumerable.Range(1, State.TotalPages).ToList()"
+                                  Value="@State.CurrentPage" ItemChanged="@(args => PageChanged(Convert.ToInt32(args.Value)))" />
+                    <input type="text" class="form-control pager-item pager-total" value="of @State.TotalPages" readonly />
+
+                    <button class="btn btn-primary btn-sm mx-2" type="button" title="Next Page"
+                            @onclick="@(args => PageChanged(State.CurrentPage + 1))"
+                            @attributes="@(State.CurrentPage == State.TotalPages ? Attrs.Disabled : Attrs.Empty)">
+                        <span class="oi oi-arrow-right"></span>
+                    </button>
+
+                    <button class="btn btn-primary btn-sm" type="button" title="Last Page"
+                            @onclick="@(_ => PageChanged(State.TotalPages))"
+                            @attributes="@(State.CurrentPage == State.TotalPages ? Attrs.Disabled : Attrs.Empty)">
+                        <span class="oi oi-arrow-thick-right"></span>
+                    </button>
+                </div>
+            }
+            <div class="col"></div>
+            <div>
+                <CustomSelect TItem="int" CssClass="form-control" Value="@State.PageSize" IsRequired="true"
+                              ItemChanged="@(args => PageSizeChanged(Convert.ToInt32(args.Value)))" Items="@(new int[] { 5, 10, 20 })" />
+            </div>
+        </div>
+    }
+</div>
+@code {
+    [Parameter] public RenderFragment TableHeader { get; set; }
+    [Parameter] public RenderFragment TableBody { get; set; }
+    //[Parameter] public RenderFragment TableFooter { get; set; }
+    [Parameter] public RenderFragment Actions { get; set; }
+    [Parameter] public PageState State { get; set; }
+    [Parameter] public EventCallback<PageState> OnStateChange { get; set; }
+    [Parameter] public bool HasPaging { get; set; } = true;
+
+    private string _searchTerm;
+    private async Task OnSearchKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            await Search(State.Filter);
+            //await Search(_searchTerm);
+    }
+
+    private async Task Search(string searchTerm)
+    {
+        State.Filter = searchTerm;
+        await OnStateChange.InvokeAsync(State);
+    }
+    private async Task PageSizeChanged(int pageSize)
+    {
+        State.PageSize = pageSize;
+        await OnStateChange.InvokeAsync(State);
+    }
+    private async Task PageChanged(int page)
+    {
+        State.CurrentPage = page;
+        await OnStateChange.InvokeAsync(State);
+    }
+}

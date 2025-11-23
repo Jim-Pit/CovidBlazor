@@ -1,0 +1,53 @@
+﻿<ModalDialog @ref=_modal TModel="object"
+             Header="Confirm Action"
+             SystemicDialog="true"
+             CssStyle="background-color:yellow">
+    <p>@(new MarkupString(Message))</p>
+
+    <br />
+    <div class="text-right">
+        <button class="btn btn-danger" type="button" @onclick="_modal.Hide">
+            No
+        </button>
+        <button class="btn btn-success" type="button" @onclick="Confirm">
+            Yes
+        </button>
+    </div>
+</ModalDialog>
+
+@code {
+    [Parameter] public string Message { get; set; }
+    [Parameter] public Func<Task> OnConfirm { get; set; }
+    [Parameter] public EventCallback OnConfirmCallback { get; set; }
+
+    private ModalDialog<object> _modal;
+
+    private async Task Confirm()
+    {
+        try
+        {
+            if (OnConfirm != null)
+                await OnConfirm();
+            else if (OnConfirmCallback.HasDelegate)
+                await OnConfirmCallback.InvokeAsync(null);
+        }
+        finally
+        {
+            _modal.Hide();
+        }
+    }
+
+    public void Show(string message, EventCallback onConfirm)
+    {
+        Message = message;
+        OnConfirmCallback = onConfirm;
+        _modal.Show(null);
+    }
+
+    public void Show(string message, Func<Task> onConfirm)
+    {
+        Message = message;
+        OnConfirm = onConfirm;
+        _modal.Show(null);
+    }
+}

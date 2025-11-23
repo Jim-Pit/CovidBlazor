@@ -1,0 +1,51 @@
+﻿<ModalDialog @ref=_modal TModel="object"
+             Header="@Title"
+             SystemicDialog="true"
+             CssStyle="background-color:red">
+    @foreach (var m in _messageLines)
+    {
+        <p>@m</p>
+    }
+    @if (!string.IsNullOrEmpty(Details))
+    {
+        <p>Details: @Details</p>
+    }
+    <footer>
+        <button class="btn btn-primary" @onclick="@OnClose">OK</button>
+    </footer>
+</ModalDialog>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Message { get; set; }
+    [Parameter] public string Details { get; set; }
+    [Parameter] public Action OnCloseAction { get; set; }
+
+    private ModalDialog<object> _modal;
+
+    private List<string> _messageLines = new List<string>();
+
+    public void Show(string title, string message, string details, Action onClose)
+    {
+        Title = title;
+        StateHasChanged();
+        //InvokeAsync(StateHasChanged);
+
+        Message = message;
+        Details = details;
+
+        OnCloseAction = onClose;
+
+        _messageLines.Clear();
+        _messageLines.AddRange(Message.Split('\n'));
+
+        _modal.Show(null);
+    }
+
+    private void OnClose()
+    {
+        OnCloseAction?.Invoke();
+
+        _modal.Hide();
+    }
+}

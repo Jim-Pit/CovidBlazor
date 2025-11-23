@@ -1,0 +1,176 @@
+﻿@page "/diagnostic-centers/{DiagnosticCenterId:int}/records"
+@*@implements ITabs*@
+
+@using DbDesign.Entities
+@using CoViDAccountant.Components
+
+<h2 class="page-title">@_diagnosticCenter?.Name</h2>
+
+<CascadingValue Value="this">
+    <TabContainer @ref="_tabContainer">
+        <Tab Sign="@VACCINATIONS_TAB">
+            @if (_vaccinations != null)
+            {
+                <DataTable State="_vaccinationsState" OnStateChange="RefreshVaccinations">
+                    <Actions>
+                        <button class="btn btn-success btn-circle btn-md" type="button" title="Add" @onclick="@(_ => OnAddRecord(RecordType.Vaccination))">
+                            <span class="oi oi-plus"></span>
+                        </button>
+                    </Actions>
+                    <TableHeader>
+                        <tr>
+                            <th>Name</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </TableHeader>
+                    <TableBody>
+                        @foreach (var i in _vaccinations)
+                        {
+                            <tr>
+                                <td>@i.Person.FullName</td>
+                                <td>@i.EventDate.ToString("dd MMM yyyy")</td>
+                                <td class="actions actions-2x">
+                                    <button class="btn btn-info btn-circle" @onclick="@(_ => OnEditRecord(i))">
+                                        <span class="oi oi-pencil"></span>
+                                    </button>
+                                    <button class="btn btn-danger btn-circle" @onclick="_ => OnDelete2(i)">
+                                        <span class="oi oi-minus"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </TableBody>
+                </DataTable>
+            }
+        </Tab>
+        <Tab Sign="@COVIDTESTS_TAB">
+            @if (_covidTests != null)
+            {
+                <DataTable State="_covidTestsState" OnStateChange="RefreshCovidTests">
+                    <Actions>
+                        <button class="btn btn-success btn-circle btn-md" type="button" title="Add" @onclick="@(_ => OnAddRecord(RecordType.CovidTest))">
+                            <span class="oi oi-plus"></span>
+                        </button>
+                    </Actions>
+                    <TableHeader>
+                        <tr>
+                            <th>Name</th>
+                            <th>Date</th>
+                            <th>Result</th>
+                            <th></th>
+                        </tr>
+                    </TableHeader>
+                    <TableBody>
+                        @foreach (var i in _covidTests)
+                        {
+                            <tr>
+                                <td>@i.Person.FullName</td>
+                                <td>@i.EventDate.ToString("dd MMM yyyy")</td>
+                                <td>@(i.Result.HasValue ? i.Result.Value ? "+" : "-" : "INVALID")</td>
+                                <td class="actions actions-2x">
+                                    <button class="btn btn-info btn-circle" @onclick="@(_ => OnEditRecord(i))">
+                                        <span class="oi oi-pencil"></span>
+                                    </button>
+                                    <button class="btn btn-danger btn-circle" @onclick="_ => OnDelete(i)">
+                                        <span class="oi oi-minus"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </TableBody>
+                </DataTable>
+            }
+        </Tab>
+    </TabContainer>
+</CascadingValue>
+
+<CascadingValue Value="_errorMsg">
+    <ModalDialog @ref=_recordModal TModel="Record" Model="_model"
+                 Header="@(_model.Id == 0 ? "Add" : "Edit")"
+                 Submit="Submit">
+        <div class="form-group row">
+            <label class="col-sm-4 col-lg-3 col-form-label required">Date</label>
+            <div class="col-sm-8 col-lg-9">
+                <InputDate class="form-control" @bind-Value="@_model.EventDate" />
+                <ValidationMessage For="() => _model.EventDate" />
+            </div>
+        </div>
+
+        @*<div class="form-group row">
+                <label class="col-sm-4 col-lg-3 col-form-label required">Person</label>
+                <div class="col-sm-8 col-lg-9">
+                    <CustomSelect Prompt="Select Person" NoValue="Guid.Empty" Value="_model.Person?.Id ?? Guid.Empty"
+                                  Items="@_clients" ItemChanged="args => OnPersonSelected(Guid.Parse(args.Value.ToString()))"
+                                  ValueFunc="x => x.Id" LabelFunc="x => x.FullName" />
+                </div>
+            </div>*@
+
+        <div class="form-group row">
+            <label class="col-sm-4 col-lg-3 col-form-label">AMKA</label>
+            <div class="col-sm-8 col-lg-9">
+                <TypeAhead TKey="Guid" TItem="Person"
+                           SearchMethod="SearchPersons"
+                           LabelFunc="@(person => person.AMKA ?? "")"
+                           ValueChanged="PersonFound"
+                           Value="@_model.Person"
+                           DebounceInterval="2500">
+                    <SelectedTemplate Context="item">
+                        @item.AMKA
+                    </SelectedTemplate>
+                    <ResultTemplate Context="item">
+                        @($"{(string.IsNullOrWhiteSpace(item.FullName) ? "" : $"{item.FullName}, ")}{item.AMKA}")
+                    </ResultTemplate>
+                </TypeAhead>
+                @*<InputText class="form-control" @bind-Value="@_personModel.AMKA" @oninput="" />*@
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-4 col-lg-3 col-form-label">Name</label>
+            <div class="col-sm-8 col-lg-9 row mx-auto">
+                <InputText class="form-control col-6" placeholder="First" @bind-Value="@_model.Person.FirstName" />
+                <InputText class="form-control col-6" placeholder="Last" @bind-Value="@_model.Person.LastName" />
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-4 col-lg-3 col-form-label">Tel</label>
+            <div class="col-sm-8 col-lg-9">
+                <InputText class="form-control" @bind-Value="@_model.Person.Tel" />
+            </div>
+        </div>
+
+        @if (_model as Vaccination != null)
+        {
+            <div class="form-group row">
+                <label class="col-sm-4 col-lg-3 col-form-label required">Vaccine</label>
+                <div class="col-sm-8 col-lg-9">
+                    <CustomSelect Prompt="Select Vaccine" NoValue="0" Value="(_model as Vaccination).Vaccine?.Id ?? 0"
+                                  Items="@_vaccines" ItemChanged="args => OnVaccineSelected(short.Parse(args.Value.ToString()))"
+                                  ValueFunc="x => x.Id" LabelFunc="x => x.Code" IsRequired="_model.Id != 0" />
+                </div>
+            </div>
+        }
+        else if (_model as CovidTest != null)
+        {
+            <div class="form-group row">
+                <label class="col-sm-4 col-lg-3 col-form-label required">Test Result</label>
+                <div class="col-sm-8 col-lg-9">
+                    <div>
+                        <input type="radio" id="positive-result" @onchange="@(() => OnResultChanged(CovidTestResult.Positive))" checked=@((_model as CovidTest).Result == true) />
+                        <label for="positive-result">+</label>
+                        <input type="radio" id="void-result" @onchange="@(() => OnResultChanged(CovidTestResult.Void))" checked=@((_model as CovidTest).Result == null) />
+                        <label for="void-result">0</label>
+                        <input type="radio" id="negative-result" @onchange="@(() => OnResultChanged(CovidTestResult.Negative))" checked=@((_model as CovidTest).Result == false) />
+                        <label for="negative-result">-</label>
+                    </div>
+                </div>
+            </div>
+        }
+    </ModalDialog>
+</CascadingValue>
+
+@code {
+
+}

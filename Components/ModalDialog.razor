@@ -1,0 +1,50 @@
+﻿@typeparam TModel
+
+@if (_onDisplay)
+{
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="@CssStyle">
+                    <h3 class="modal-title">@Header</h3>
+                    <button type="button" class="close"
+                            @onclick="Hide">
+                        <span>X</span>
+                    </button>
+                </div>
+                @if (!SystemicDialog)
+                {
+                    <EditForm EditContext="_editContext" OnValidSubmit="OnSubmit">
+                        <DataAnnotationsValidator />
+                        @*<ValidationSummary />*@
+
+                        <div class="modal-body">
+                            @ChildContent
+
+                            <button class="btn btn-danger" type="button" @onclick="Hide">
+                                Cancel
+                            </button>
+                            <button class="btn btn-primary" type="submit"> @* ALL other buttons included must be of type-button *@ 
+                                Save
+                            </button>
+                        </div>
+                        <div class="modal-footer">
+                            @if (!string.IsNullOrEmpty(Error))
+                            {
+                                <div class="alert-danger">
+                                    @Error
+                                </div>
+                            }
+                        </div>
+                    </EditForm>
+                }
+                else
+                {
+                    <div class="modal-body">
+                        @ChildContent
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}

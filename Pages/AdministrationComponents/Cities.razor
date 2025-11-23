@@ -1,0 +1,93 @@
+﻿@page "/admin/cities"
+@attribute [Authorize(Roles = Role.AdminRoleKey)]
+
+@using CoViDAccountant.Components
+@using DbDesign.Entities
+@using Microsoft.EntityFrameworkCore
+
+<h3>Cities</h3>
+
+<DataTable State="_state" OnStateChange="Refresh">
+    <Actions>
+        <button class="btn btn-success btn-circle btn-md" @onclick="_ => OnCityModalShow()">
+            <span class="oi oi-plus"></span>
+        </button>
+    </Actions>
+    <TableHeader>
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th></th>
+        </tr>
+    </TableHeader>
+    <TableBody>
+        @foreach (var i in _items)
+        {
+            <tr>
+                <td class="micro-control text-center">
+                    <button class="btn btn-primary btn-circle btn-md" @onclick="_ => i.ShowDistricts = !i.ShowDistricts">
+                        <span class="@($"oi oi-chevron-{(i.ShowDistricts ? "top" : "bottom")}")"></span>
+                    </button>
+                </td>
+                <td>@i.City.Name</td>
+                <td class="actions actions-3x">
+                    <button class="btn btn-success btn-circle" @onclick="_ => OnDistrictModalShow(i.City)">
+                        <span class="oi oi-plus"></span>
+                    </button>
+                    <button class="btn btn-info btn-circle" @onclick="_ => OnCityModalShow(i.City)">
+                        <span class="oi oi-pencil"></span>
+                    </button>
+                    <button class="btn btn-danger btn-circle" @onclick="_ => OnDelete(i.City)">
+                        <span class="oi oi-minus"></span>
+                    </button>
+                </td>
+            </tr>
+            @if(i.ShowDistricts)
+            {
+                @foreach(var d in i.City.Districts)
+                {
+                    <tr>
+                        <td></td>
+                        <td>@d.Name</td>
+                        <td class="actions actions-2x">
+                            <button class="btn btn-info btn-circle" @onclick="_ => OnDistrictModalShow(i.City, d)">
+                                <span class="oi oi-pencil"></span>
+                            </button>
+                            <button class="btn btn-danger btn-circle" @onclick="_ => OnDelete(d, i.City)">
+                                <span class="oi oi-minus"></span>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        }
+    </TableBody>
+</DataTable>
+
+<CascadingValue Value="_errorMsg">
+    <ModalDialog @ref=_cityModal TModel="City" Model="_cityModel"
+                 Header="@(_cityModel.Id == 0 ? "Add" : "Edit")"
+                 Submit="Submit">
+        <div class="form-group row">
+            <label class="col-sm-4 col-lg-3 col-form-label required">Name</label>
+            <div class="col-sm-8 col-lg-9">
+                <InputText class="form-control" @bind-Value="@_cityModel.Name" />
+                <ValidationMessage For="() => _cityModel.Name" />
+            </div>
+        </div>
+    </ModalDialog>
+</CascadingValue>
+
+<CascadingValue Value="_errorMsg">
+    <ModalDialog @ref=_districtModal TModel="District" Model="_districtModel"
+                 Header="@(_districtModel.Id == 0 ? "Add" : "Edit")"
+                 Submit="Submit">
+        <div class="form-group row">
+            <label class="col-sm-4 col-lg-3 col-form-label required">Name</label>
+            <div class="col-sm-8 col-lg-9">
+                <InputText class="form-control" @bind-Value="@_districtModel.Name" />
+                <ValidationMessage For="() => _districtModel.Name" />
+            </div>
+        </div>
+    </ModalDialog>
+</CascadingValue>

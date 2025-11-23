@@ -1,0 +1,77 @@
+﻿@page "/admin/users"
+@attribute [Authorize(Roles = Role.AdminRoleKey)]
+
+@using CoViDAccountant.Components
+@using DbDesign.Entities
+
+<h3>Users</h3>
+
+<DataTable State="_state" OnStateChange="Refresh">
+    <Actions>
+        <button class="btn btn-success btn-circle" @onclick="_ => OnModalShow()">
+            Add
+        </button>
+    </Actions>
+    <TableHeader>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th></th>
+        </tr>
+    </TableHeader>
+    <TableBody>
+        @foreach (var user in _users)
+        {
+            <tr>
+                <td>@user.Name</td>
+                <td>@user.Email</td>
+                <td>@user.UserRole?.Role?.Name</td>
+                <td class="actions actions-2x">
+                    <button class="btn btn-info btn-circle" @onclick="_ => OnModalShow(user)">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="btn btn-danger btn-circle" @onclick="_ => OnDelete(user)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </TableBody>
+</DataTable>
+
+<ModalDialog @ref=_modal TModel="User" Model="_model"
+             Header="@(_model.Id == Guid.Empty ? "Add" : "Edit")"
+             Submit="Submit">
+
+    <div class="form-group row">
+        <label class="col-sm-4 col-lg-3 col-form-label required">FirstName</label>
+        <div class="col-sm-8 col-lg-9">
+            <InputText class="form-control" @bind-Value="@_model.FirstName" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-4 col-lg-3 col-form-label required">LastName</label>
+        <div class="col-sm-8 col-lg-9">
+            <InputText class="form-control" @bind-Value="@_model.LastName" />
+            <ValidationMessage For="() => _model.LastName" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-4 col-lg-3 col-form-label required">Email</label>
+        <div class="col-sm-8 col-lg-9">
+            <InputText class="form-control" Value="@_model.Email" ValueExpression="() => _model.Email" ValueChanged="@EmailChanged" />
+            <ValidationMessage For="() => _model.Email" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-4 col-lg-3 col-form-label required">Role</label>
+        <div class="col-sm-8 col-lg-9">
+            <CustomSelect Prompt="Select Role" NoValue="null" Value="_model.UserRole?.Role.Name"
+                          Items="@_roleNames" ItemChanged="@RoleChanged" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <AddressField Address="@_model.Address" />
+    </div>
+</ModalDialog>

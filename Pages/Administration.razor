@@ -1,0 +1,25 @@
+﻿@page "/admin"
+@using CoViDAccountant.Components
+@using CoViDAccountant.Pages.AdministrationComponents
+
+<CascadingValue Value="this">
+    <TabContainer>
+        <Tab Sign="@TabSign.Users" >
+            <Users />
+        </Tab>
+        <Tab Sign="@TabSign.Vaccines">
+            <Vaccines />
+        </Tab>
+        <Tab Sign="@TabSign.DiagnosticCenters">
+            <DiagnosticCenters />
+        </Tab>
+        <Tab Sign="@TabSign.Cities">
+            <Cities />
+        </Tab>
+    </TabContainer>
+</CascadingValue>
+
+
+@code {
+
+}
