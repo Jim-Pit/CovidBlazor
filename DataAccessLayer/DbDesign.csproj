@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20211219201625_Removes_Required_From_Vaccinations.cs" />
+    <Compile Remove="Migrations\20211219201625_Removes_Required_From_Vaccinations.Designer.cs" />
+    <Compile Remove="Migrations\20211219202940_Test_Migration.cs" />
+    <Compile Remove="Migrations\20211219202940_Test_Migration.Designer.cs" />
+    <Compile Remove="Migrations\20211219203047_Test_Migration.cs" />
+    <Compile Remove="Migrations\20211219203047_Test_Migration.Designer.cs" />
+  </ItemGroup>
+
+  <!--<ItemGroup>
+    <Compile Remove="Migrations\20210411205431_InitialDB.cs" />
+    <Compile Remove="Migrations\20210411205431_InitialDB.Designer.cs" />
+    <Compile Remove="Migrations\20210425134124_Initial_DB.cs" />
+    <Compile Remove="Migrations\20210425134124_Initial_DB.Designer.cs" />
+    <Compile Remove="Migrations\20210516205227_Initial_Schema.cs" />
+    <Compile Remove="Migrations\20210516205227_Initial_Schema.Designer.cs" />
+    <Compile Remove="Migrations\20210606085908_Convert_Short_Prop_To_Int.cs" />
+    <Compile Remove="Migrations\20210606085908_Convert_Short_Prop_To_Int.Designer.cs" />
+    <Compile Remove="Migrations\20210619130538_InitialDbSchema.cs" />
+    <Compile Remove="Migrations\20210619130538_InitialDbSchema.Designer.cs" />
+    <Compile Remove="Migrations\20210710181906_Initial_DB_Schema.cs" />
+    <Compile Remove="Migrations\20210710181906_Initial_DB_Schema.Designer.cs" />
+    <Compile Remove="Migrations\20211218010710_Test.cs" />
+    <Compile Remove="Migrations\20211218010710_Test.Designer.cs" />
+  </ItemGroup>-->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\SharedClasses.csproj" />
+  </ItemGroup>
+
+</Project>
