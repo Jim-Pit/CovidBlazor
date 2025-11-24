@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoViDAccountant", "CoViDAccountant.csproj", "{1465F469-FABC-4A67-94FB-E8C182E4FBEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoViDAccountant", "BlazorApp\CoViDAccountant.csproj", "{1465F469-FABC-4A67-94FB-E8C182E4FBEC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbDesign", "..\EF\DbDesign.csproj", "{B2031E61-D867-4B64-BF03-EEA29F173FBA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbDesign", "DAL\DbDesign.csproj", "{B2031E61-D867-4B64-BF03-EEA29F173FBA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedClasses", "..\Shared\SharedClasses.csproj", "{0B33461B-687E-4A44-B0D4-B3D8B5D96480}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedClasses", "SharedLib\SharedClasses.csproj", "{0B33461B-687E-4A44-B0D4-B3D8B5D96480}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

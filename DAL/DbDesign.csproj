@@ -37,7 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\SharedClasses.csproj" />
+    <!--<ProjectReference Include="..\Shared\SharedClasses.csproj" />-->
+	  <ProjectReference Include="..\SharedLib\SharedClasses.csproj" />
   </ItemGroup>
 
 </Project>

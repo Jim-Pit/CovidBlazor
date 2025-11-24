@@ -12,8 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EF\DbDesign.csproj" />
+    <!--
+	<ProjectReference Include="..\EF\DbDesign.csproj" />
     <ProjectReference Include="..\Shared\SharedClasses.csproj" />
+	-->
+	<ProjectReference Include="..\DAL\DbDesign.csproj" />
+	<ProjectReference Include="..\SharedLib\SharedClasses.csproj" />
   </ItemGroup>
 
 </Project>
